@@ -17,8 +17,9 @@ A7 OK
 BONUS Parcial, botão remove n executa recursão de remoção pra limpeza da subarvore
 
 Observações:
-Foi implementado um botão "remove object" adjunto do já existente "create", esse contempla a funcionalidade de remoção do objeto selecionado
-da hierarquia.
+OBS1: Foi implementado no menu "create" uma opção de criação "scene" que possibilita a criação de uma nova cena totalmente funcional  
+
+OBS2:Foi implementado um botão "remove" adjunto do já existente "create", esse por sua vez, contempla a funcionalidade de remoção do objeto ou cena selecionado.
 
 Justificativas:
 
