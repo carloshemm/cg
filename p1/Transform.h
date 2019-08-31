@@ -27,8 +27,8 @@
 // ========
 // Class definition for scene object transform.
 //
-// Author(s): Paulo Pagliosa (and your name)
-// Last revision: 25/08/2018
+// Author(s): Paulo Pagliosa, Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
 
 #ifndef __Transform_h
 #define __Transform_h

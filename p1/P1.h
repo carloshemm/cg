@@ -1,3 +1,6 @@
+// Author(s): Paulo Pagliosa, Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
+
 #ifndef __P1_h
 #define __P1_h
 

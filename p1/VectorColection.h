@@ -1,3 +1,6 @@
+// Author(s): Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
+
 #ifndef __VectorColection_h
 #define __VectorColection_h
 

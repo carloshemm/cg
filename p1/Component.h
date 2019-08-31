@@ -27,8 +27,8 @@
 // ========
 // Class definition for scene object component.
 //
-// Author(s): Paulo Pagliosa (and your name)
-// Last revision: 25/08/2018
+// Author(s): Paulo Pagliosa, Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
 
 #ifndef __Component_h
 #define __Component_h
@@ -61,6 +61,11 @@ public:
   {
     return _sceneObject;
   }
+
+	void setSceneObjectOwner(SceneObject* parent)
+	{
+		_sceneObject = parent;
+	}
 
   /// Returns the transform of this component.
   Transform* transform(); // implemented in SceneObject.h

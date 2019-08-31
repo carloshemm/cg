@@ -27,8 +27,8 @@
 // ========
 // Class definition for primitive.
 //
-// Author(s): Paulo Pagliosa (and your name)
-// Last revision: 25/08/2018
+// Author(s): Paulo Pagliosa, Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
 
 #ifndef __Primitive_h
 #define __Primitive_h
@@ -51,7 +51,7 @@ public:
     Component{"Primitive"},
     _mesh{mesh}
   {
-		_parent = nullptr;
+		// Do nothing
   }
 
   ~Primitive() override
@@ -64,19 +64,9 @@ public:
     return _mesh;
   }
 
-	void setParent(Reference<SceneObject> parent) 
-	{
-		_parent = parent;
-	}
-
-	auto getParent()
-	{
-		return _parent;
-	}
-
 private:
   GLMeshArray* _mesh;
-	SceneObject* _parent;
+	//SceneObject* _parent;
 
 }; // Primitive
 

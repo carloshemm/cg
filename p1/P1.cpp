@@ -1,3 +1,6 @@
+// Author(s): Paulo Pagliosa, Yago Mescolotte, Carlos Monteiro
+// Last revision: 31/08/2019
+
 #include "P1.h"
 
 // Auxiliary functions
@@ -68,7 +71,7 @@ Reference<SceneObject> P1::objectOrBoxCreator(T father, objectBox obj)
 		name = "Box " + std::to_string(boxCount);
 		son = new SceneObject{ name.c_str(), _scene };
 		Reference<Primitive> primitive = cg::makeBoxMesh();
-		primitive->setParent(son);
+		primitive->setSceneObjectOwner(son);
 		son->componentColection.add((Reference <Component>)primitive);
 		son->setParent(objectFather);
 		_scene->primitiveColection.add(primitive);
@@ -146,13 +149,13 @@ P1::buildScene()
 	_current = _scene = new Scene("Scene 1");
 
 	// Create the Objects
+	Reference<SceneObject> _box1 = objectOrBoxCreator(_scene, Box);
 	Reference<SceneObject> _object1 = objectOrBoxCreator(_scene, Object);
 	Reference<SceneObject> _object2 = objectOrBoxCreator(_scene, Object);
 	Reference<SceneObject> _object3 = objectOrBoxCreator(_object1, Object);
 	Reference<SceneObject> _object4 = objectOrBoxCreator(_object1, Object);
 	Reference<SceneObject> _object5 = objectOrBoxCreator(_object2, Object);
 	Reference<SceneObject> _object6 = objectOrBoxCreator(_object5, Object);
-	Reference<SceneObject> _box1 = objectOrBoxCreator(_scene, Box);
 	Reference<SceneObject> _box2 = objectOrBoxCreator(_object3, Box);
 	Reference<SceneObject> _box3 = objectOrBoxCreator(_object4, Box);
 	Reference<SceneObject> _box4 = objectOrBoxCreator(_object6, Box);
@@ -421,44 +424,6 @@ P1::gui()
   */
 }
 
-	/*
-void
-P1::render()
-{
-	GLWindow::render();
-	if (_current == NULL)
-		return;
-
-	SceneObject* objectCurrent = dynamic_cast<SceneObject*>(_current);
-	// Scene
-	if (objectCurrent == nullptr)
-		return;
-	
-	// Invisible
-	if (!objectCurrent->visible)
-		return;
-	
-	_program.setUniformMat4("transform", _transform);
-
-	auto primitive = findPrimitive(objectCurrent);
-	
-	// Hasns't Primitive 
-	if (primitive == nullptr)
-		return;
-
-	auto m = primitive->mesh();
-
-	m->bind();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDrawElements(GL_TRIANGLES, m->vertexCount(), GL_UNSIGNED_INT, 0);
-
-	m->setVertexColor(selectedWireframeColor);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawElements(GL_TRIANGLES, m->vertexCount(), GL_UNSIGNED_INT, 0);
-	m->useVertexColors();
-}
-	*/
-
 // Render ideia do gabriel
 void
 P1::render()
@@ -471,7 +436,7 @@ P1::render()
 	{
 		auto m = (*it)->mesh();
 
-		auto obj = (*it)->getParent();
+		auto obj = (*it)->sceneObject();
 		auto transform = obj->transform()->localToWorldMatrix();
 		_program.setUniformMat4("transform",  transform);
 
