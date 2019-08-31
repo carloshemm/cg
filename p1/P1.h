@@ -13,6 +13,8 @@ using namespace cg;
 class P1: public GLWindow
 {
 public:
+	VectorColection<Reference<Scene>> sceneColection;
+
   P1(int width, int height):
     GLWindow{"cg2019 - P1", width, height},
     _program{"P1"}
@@ -31,11 +33,12 @@ public:
 
 private:
   GLSL::Program _program;
-  Reference<Scene> _scene;
+	//Reference<Scene> _scene;
   SceneNode* _current{};
   Color selectedWireframeColor{0, 0, 0};
-	int boxCount = 0;
-	int objectCount = 0;
+	int _boxCount = 0;
+	int _objectCount = 0;
+	int _sceneCount = 0;
 
   void buildScene();
 
@@ -46,12 +49,14 @@ private:
   void objectGui();
 
 	void hierarchyWindowRecursive(ListColection<Reference<SceneObject>>* sceneObjectColection);
-	auto findPrimitive(Reference<SceneObject> obj);
-	void removeSceneObject(Reference <SceneObject> obj);
 
+	auto findPrimitive(Reference<SceneObject> obj);
+
+	void removePrimitives(Reference<SceneObject> obj);
+	
 	enum objectBox { Object, Box };
 	template <typename T>
-	Reference<SceneObject> objectOrBoxCreator(T father, objectBox obj);
+	Reference<SceneObject> nodeCreator(T father, objectBox obj);
 
 }; // P1
 

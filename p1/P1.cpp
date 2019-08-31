@@ -24,57 +24,59 @@ P1::findPrimitive(Reference <SceneObject> obj)
 	return primitiveCurrent;
 }
 
+
 void
-P1::removeSceneObject(Reference <SceneObject> obj)
+P1::removePrimitives(Reference<SceneObject> obj)
 {
+	auto primitive = findPrimitive(obj);
+	if (primitive != nullptr)
+		obj->scene()->primitiveColection.remove(primitive);
+
 	auto begin = obj->sceneObjectColection.beginIterador();
 	auto end = obj->sceneObjectColection.endIterador();
 	for (auto it = begin; it != end; it++)
 	{
-		//removeSceneObject(Reference<SceneObject> (*it)); # HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+		removePrimitives(*it);
 	}
-	auto primitive = findPrimitive(obj);
-	if (primitive != nullptr)
-		_scene->primitiveColection.remove(primitive);
-	if (obj->parent() == nullptr)
-		_scene->sceneObjectColection.remove(obj);
-	else
-		obj->parent()->sceneObjectColection.remove(obj);
 }
 
 template <typename T>
-//<Reference<Scene>, Reference<SceneObject>>
-Reference<SceneObject> P1::objectOrBoxCreator(T father, objectBox obj)
+Reference<SceneObject> 
+P1::nodeCreator(T father, objectBox obj)
 {
 	std::string name;
+	Scene* sceneFather = nullptr;
 
 	// Check if father is a SceneObject or a Scene
 	SceneObject* objectFather = dynamic_cast<SceneObject*> (father.get());
 	if (objectFather == nullptr)
 	{
-		Scene* sceneFather = dynamic_cast<Scene*> (father.get());
+		sceneFather = dynamic_cast<Scene*> (father.get());
 		if (sceneFather == nullptr)
 			return nullptr; //sceneCurrent;
+	}
+	else {
+		sceneFather = objectFather->scene();
 	}
 	
 	Reference<SceneObject> son;
 
 	if (obj == Object) {
-		objectCount++;
-		name = "Object " + std::to_string(objectCount);
-		son = new SceneObject{ name.c_str(), _scene };
+		_objectCount++;
+		name = "Object " + std::to_string(_objectCount);
+		son = new SceneObject{ name.c_str(), sceneFather };
 		son->setParent(objectFather);
 	}
 	else if (obj == Box) {
 		// Create the Box's
-		boxCount++;
-		name = "Box " + std::to_string(boxCount);
-		son = new SceneObject{ name.c_str(), _scene };
+		_boxCount++;
+		name = "Box " + std::to_string(_boxCount);
+		son = new SceneObject{ name.c_str(), sceneFather };
 		Reference<Primitive> primitive = cg::makeBoxMesh();
 		primitive->setSceneObjectOwner(son);
 		son->componentColection.add((Reference <Component>)primitive);
 		son->setParent(objectFather);
-		_scene->primitiveColection.add(primitive);
+		sceneFather->primitiveColection.add(primitive);
 	}
 	
 	return son;
@@ -146,19 +148,22 @@ P1::buildScene()
 {
 	std::string name;
 
-	_current = _scene = new Scene("Scene 1");
+	_sceneCount++;
+	auto scene = new Scene("Scene 1");
+	_current = scene;
+	sceneColection.add(scene);
 
 	// Create the Objects
-	Reference<SceneObject> _box1 = objectOrBoxCreator(_scene, Box);
-	Reference<SceneObject> _object1 = objectOrBoxCreator(_scene, Object);
-	Reference<SceneObject> _object2 = objectOrBoxCreator(_scene, Object);
-	Reference<SceneObject> _object3 = objectOrBoxCreator(_object1, Object);
-	Reference<SceneObject> _object4 = objectOrBoxCreator(_object1, Object);
-	Reference<SceneObject> _object5 = objectOrBoxCreator(_object2, Object);
-	Reference<SceneObject> _object6 = objectOrBoxCreator(_object5, Object);
-	Reference<SceneObject> _box2 = objectOrBoxCreator(_object3, Box);
-	Reference<SceneObject> _box3 = objectOrBoxCreator(_object4, Box);
-	Reference<SceneObject> _box4 = objectOrBoxCreator(_object6, Box);
+	Reference<SceneObject> box1 = nodeCreator(Reference<Scene>(scene), Box);
+	Reference<SceneObject> object1 = nodeCreator(Reference<Scene>(scene), Object);
+	Reference<SceneObject> object2 = nodeCreator(Reference<Scene>(scene), Object);
+	Reference<SceneObject> object3 = nodeCreator(object1, Object);
+	Reference<SceneObject> object4 = nodeCreator(object1, Object);
+	Reference<SceneObject> object5 = nodeCreator(object2, Object);
+	Reference<SceneObject> object6 = nodeCreator(object5, Object);
+	Reference<SceneObject> box2 = nodeCreator(object3, Box);
+	Reference<SceneObject> box3 = nodeCreator(object4, Box);
+	Reference<SceneObject> box4 = nodeCreator(object6, Box);
 
 }
 
@@ -183,79 +188,109 @@ namespace ImGui
 inline void
 P1::hierarchyWindow()
 {
-  ImGui::Begin("Hierarchy");
-  if (ImGui::Button("Create###object"))
-    ImGui::OpenPopup("CreateObjectPopup");
-  if (ImGui::BeginPopup("CreateObjectPopup"))
-  {
-    if(ImGui::MenuItem("Empty Object"))
+	ImGui::Begin("Hierarchy");
+	if (ImGui::Button("Create###object"))
+		ImGui::OpenPopup("CreateObjectPopup");
+	if (ImGui::BeginPopup("CreateObjectPopup"))
+	{
+		if (ImGui::MenuItem("Scene"))
+		{
+			_sceneCount++;
+			auto name = "Scene " + std::to_string(_sceneCount);
+			auto scene = new Scene{ name.c_str() };
+			_current = scene;
+			sceneColection.add(scene);
+		}
+		if (ImGui::MenuItem("Empty Object"))
 		{
 			SceneObject* objectCurrent = dynamic_cast<SceneObject*> (_current);
 			if (objectCurrent != nullptr)
-				auto obj = objectOrBoxCreator(Reference<SceneObject>(objectCurrent), Object);
+				auto obj = nodeCreator(Reference<SceneObject>(objectCurrent), Object);
 			else
-				auto obj = objectOrBoxCreator(_scene, Object);
+			{
+				Scene* sceneFather = dynamic_cast<Scene*> (_current);
+				auto obj = nodeCreator(Reference<Scene>(sceneFather), Object);
+			}
 		}
-    if (ImGui::BeginMenu("3D Object"))
-    {
-      if (ImGui::MenuItem("Box"))
-      {
+		if (ImGui::BeginMenu("3D Object"))
+		{
+			if (ImGui::MenuItem("Box"))
+			{
 				SceneObject* objectCurrent = dynamic_cast<SceneObject*> (_current);
 				if (objectCurrent != nullptr)
-					auto obj = objectOrBoxCreator(Reference<SceneObject> (objectCurrent), Box);
+					auto obj = nodeCreator(Reference<SceneObject>(objectCurrent), Box);
 				else
-					auto obj = objectOrBoxCreator(_scene, Box);
+				{
+					Scene* sceneFather = dynamic_cast<Scene*> (_current);
+					auto obj = nodeCreator(Reference<Scene>(sceneFather), Box);
+				}
 			}
-      ImGui::EndMenu();
-    }
-    ImGui::EndPopup();
-  }
+			ImGui::EndMenu();
+		}
+		ImGui::EndPopup();
+	}
 	ImGui::SameLine();
-	if (ImGui::Button("Delete object")){
+
+	if (ImGui::Button("Delete")) {
 		// Check if _current is a SceneObject
 		SceneObject* objectCurrent = dynamic_cast<SceneObject*> (_current);
-		if (objectCurrent != nullptr) {
+
+		if (objectCurrent != nullptr) { // It's a SceneObject
 			// Check parent to remove SceneObject
 			auto parent = objectCurrent->parent();
-			auto sceneObjectColection = &(_scene->sceneObjectColection);
 			if (parent != nullptr)
-			{
-				sceneObjectColection = &(parent->sceneObjectColection);
 				// Refresh _current
 				_current = objectCurrent->parent();
+			else
+				_current = objectCurrent->scene();
+
+			removePrimitives(objectCurrent);
+
+			if (objectCurrent->parent() == nullptr)
+				objectCurrent->scene()->sceneObjectColection.remove(objectCurrent);
+			else
+				objectCurrent->parent()->sceneObjectColection.remove(objectCurrent);
+		}
+		else // It's a Scene
+		{
+			if (sceneColection.size() > 1)
+			{
+				Scene* sceneCurrent = dynamic_cast<Scene*> (_current);
+				sceneColection.remove(Reference<Scene>(sceneCurrent));
+				_current = *sceneColection.beginIterador();
 			}
 			else
 			{
-				_current = _scene;
+				ImGui::OpenPopup("Can't delete");
 			}
-			removeSceneObject(objectCurrent);
-		}
-		else 
-		{
-			ImGui::OpenPopup("Can't delete Scene");
 		}
 	}
-	if (ImGui::BeginPopup("Can't delete Scene"))
+	if (ImGui::BeginPopup("Can't delete"))
 	{
-		ImGui::MenuItem("Can't delete Scene");
+		ImGui::Text("Must be at least one scene");
 		ImGui::EndPopup();
 	}
-  
-	ImGui::Separator();
-	
-	ImGuiTreeNodeFlags flag{ ImGuiTreeNodeFlags_OpenOnArrow };
-  //Open the Scene
-	auto open0 = ImGui::TreeNodeEx(_scene,
-    _current == _scene ? flag | ImGuiTreeNodeFlags_Selected : flag,
-    _scene->name());
 
-	if (ImGui::IsItemClicked()) {
-		_current = _scene;
-	}
-  
-	// OPEN THE TREE
-	if (open0) {
-		hierarchyWindowRecursive(&_scene->sceneObjectColection);
+	ImGui::Separator();
+
+	auto begin = sceneColection.beginIterador();
+	auto end = sceneColection.endIterador();
+	for (auto sceneIt = begin; sceneIt != end; sceneIt++)
+	{
+		ImGuiTreeNodeFlags flag{ ImGuiTreeNodeFlags_OpenOnArrow };
+		//Open the Scene
+		auto open0 = ImGui::TreeNodeEx(*sceneIt,
+			_current == *sceneIt ? flag | ImGuiTreeNodeFlags_Selected : flag,
+			(*sceneIt)->name());
+
+		if (ImGui::IsItemClicked()) {
+			_current = *sceneIt;
+		}
+
+		// OPEN THE TREE
+		if (open0) {
+			hierarchyWindowRecursive(&(*sceneIt)->sceneObjectColection);
+		}
 	}
 
   ImGui::End();
@@ -264,19 +299,14 @@ P1::hierarchyWindow()
 inline void
 P1::hierarchyWindowRecursive(ListColection<Reference<SceneObject>>* objectColection )
 {
-	ImGuiTreeNodeFlags flag{};
-	ImGuiTreeNodeFlags flag1{ ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen };
-	ImGuiTreeNodeFlags flag2{ ImGuiTreeNodeFlags_OpenOnArrow };
-
 	auto begin = objectColection->beginIterador();
 	auto end = objectColection->endIterador();
 	for (auto objectIt = begin; objectIt != end; objectIt++) 
 	{
-		// Check next Level tree for each node to set Level icon
-		if ((*objectIt)->sceneObjectColection.beginIterador() != (*objectIt)->sceneObjectColection.endIterador())
-			flag = flag2;
-		else
-			flag = flag1;
+		// Check if it's a tree leaf node to define its icon
+		auto flag = ((*objectIt)->sceneObjectColection.size() == 0) ? 
+			ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen : ImGuiTreeNodeFlags_OpenOnArrow;
+		
 		// Create Level nodes
 		auto open = ImGui::TreeNodeEx(*objectIt,
 			_current == *objectIt ? flag | ImGuiTreeNodeFlags_Selected : flag,
@@ -287,12 +317,11 @@ P1::hierarchyWindowRecursive(ListColection<Reference<SceneObject>>* objectColect
 			_current = *objectIt;
 		
 		// Open the next level
-		if (open && flag == flag2) {
+		if (open && flag == ImGuiTreeNodeFlags_OpenOnArrow) {
 			hierarchyWindowRecursive(&(*objectIt)->sceneObjectColection);
 		}
 
 	}
-	render();
 	ImGui::TreePop();
 }
 
@@ -430,8 +459,16 @@ P1::render()
 {
 	GLWindow::render();
 
-	auto begin = _scene->primitiveColection.beginIterador();
-	auto end = _scene->primitiveColection.endIterador();
+	Scene* sceneCurrent;
+
+	SceneObject* objectCurrent = dynamic_cast<SceneObject*> (_current);
+	if (objectCurrent != nullptr)
+		sceneCurrent = objectCurrent->scene();
+	else
+		sceneCurrent = dynamic_cast<Scene*> (_current);
+
+	auto begin = sceneCurrent->primitiveColection.beginIterador();
+	auto end = sceneCurrent->primitiveColection.endIterador();
 	for (auto it = begin; it != end; it++)
 	{
 		auto m = (*it)->mesh();

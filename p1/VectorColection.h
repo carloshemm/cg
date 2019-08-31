@@ -21,7 +21,7 @@ public:
 
 	auto endIterador();
 
-	int qtdColection();
+	int size();
 
 private:
 	std::vector<T> colection;
@@ -68,8 +68,8 @@ VectorColection<T>::remove(T obj)
 
 template <class T>
 int
-VectorColection<T>::qtdColection() {
-	return colection.size;
+VectorColection<T>::size() {
+	return colection.size();
 }
 
 #endif // __VectorColection_h

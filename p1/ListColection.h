@@ -21,7 +21,7 @@ public:
 
 	auto endIterador();
 
-	int qtdColection();
+	int size();
 
 private:
 	std::list<T> colection;
@@ -60,8 +60,8 @@ ListColection<T>::remove(T obj)
 
 template <class T>
 int
-ListColection<T>::qtdColection() {
-	return colection.size;
+ListColection<T>::size() {
+	return colection.size();
 }
 
 #endif // __ListColection_h
