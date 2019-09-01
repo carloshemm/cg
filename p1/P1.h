@@ -33,7 +33,6 @@ public:
 
 private:
   GLSL::Program _program;
-	//Reference<Scene> _scene;
   SceneNode* _current{};
   Color selectedWireframeColor{0, 0, 0};
 	int _boxCount = 0;
